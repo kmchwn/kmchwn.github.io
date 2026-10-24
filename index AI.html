@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StudyBalance – ตารางเรียนสมดุล</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3f5;--card:#fff;--ink:#1d2a33;--mute:#5d6e79;--line:#d5e0e5;--teal:#1f7a74;--tealbg:#d9efec;--blue:#3b5f8f;--bluebg:#dde7f4;--amber:#a86a00;--amberbg:#fbeccb;--rose:#a63d52;--r:10px}
+@media (prefers-color-scheme:dark){:root{--bg:#121b21;--card:#1a262e;--ink:#e6eef2;--mute:#97a9b4;--line:#2c3c47;--teal:#55c2b8;--tealbg:#17403d;--blue:#8fb2e3;--bluebg:#1f3350;--amber:#e3b04b;--amberbg:#403016;--rose:#e58a9b}}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex Sans Thai",system-ui,sans-serif}
+header{padding:20px 16px 8px;max-width:1100px;margin:auto}
+h1{margin:0;font-size:1.6rem;font-weight:700}
+header p{margin:2px 0 0;color:var(--mute)}
+nav{display:flex;gap:6px;max-width:1100px;margin:12px auto 0;padding:0 16px;overflow-x:auto}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:99px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button[aria-selected=true]{background:var(--teal);border-color:var(--teal);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+main{max-width:1100px;margin:auto;padding:16px}
+section[hidden]{display:none}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px}
+h2{margin:0 0 10px;font-size:1.15rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+label{display:flex;flex-direction:column;font-size:.85rem;color:var(--mute);gap:2px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+textarea{width:100%;min-height:80px}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--teal);color:#fff;cursor:pointer;font-weight:500}
+.btn.alt{background:var(--bluebg);color:var(--blue)}
+.btn.ghost{background:transparent;color:var(--rose);border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{padding:10px 12px;border-radius:8px;background:var(--bg)}
+.stat b{display:block;font-size:1.4rem}
+.stat span{color:var(--mute);font-size:.85rem}
+.score{display:flex;align-items:center;gap:14px}
+.ring{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:1.5rem;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0)}
+.ring i{font-style:normal;width:64px;height:64px;border-radius:50%;background:var(--card);display:grid;place-items:center}
+.week{display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:8px;overflow-x:auto;padding-bottom:6px}
+.day{background:var(--bg);border-radius:8px;padding:8px;min-height:120px}
+.day h3{margin:0 0 6px;font-size:.95rem}
+.blk{border-radius:6px;padding:5px 8px;margin-bottom:5px;font-size:.85rem;line-height:1.35}
+.blk small{display:block;color:var(--mute)}
+.blk.class{background:var(--bluebg);border-left:4px solid var(--blue)}
+.blk.class.fixed{border-left-color:var(--rose)}
+.blk.study{background:var(--tealbg);border-left:4px solid var(--teal)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--mute);margin-top:8px}
+ul.list{list-style:none;margin:10px 0 0;padding:0}
+ul.list li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
+ul.list button{border:0;background:none;color:var(--rose);cursor:pointer;font-size:1rem}
+.msg{padding:10px 12px;border-radius:8px;background:var(--amberbg);color:var(--amber);margin-top:10px}
+.msg.ok{background:var(--tealbg);color:var(--teal)}
+pre.ai{white-space:pre-wrap;font:inherit;background:var(--bg);padding:12px;border-radius:8px;margin:10px 0 0}
+.scale{display:flex;gap:6px}
+.scale label{flex-direction:row;align-items:center;gap:4px;color:var(--ink)}
+@media (max-width:640px){.week{grid-template-columns:repeat(7,150px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>StudyBalance</h1>
+  <p>จัดตารางเรียน เว้นเวลาพัก และดูแลใจระหว่างสัปดาห์ที่หนัก</p>
+</header>
+<nav role="tablist" id="tabs"></nav>
+<main>
+
+<section id="t-plan">
+  <div class="panel">
+    <h2>วิชา / คาบเรียน</h2>
+    <div class="row">
+      <label>ชื่อวิชา<input id="sn" placeholder="เช่น แคลคูลัส"></label>
+      <label>วัน<select id="sd"></select></label>
+      <label>เริ่ม<input id="ss" type="time" value="09:00"></label>
+      <label>จบ<input id="se" type="time" value="12:00"></label>
+      <label class="scale"><span style="display:flex;align-items:center;gap:6px;color:var(--ink)"><input id="sf" type="checkbox" checked> เลื่อนไม่ได้</span></label>
+      <button class="btn" onclick="addSubject()">เพิ่มวิชา</button>
+    </div>
+    <ul class="list" id="slist"></ul>
+  </div>
+
+  <div class="panel">
+    <h2>เวลาอ่านหนังสือ/ทำงานที่ต้องจัดให้</h2>
+    <div class="row">
+      <label>งาน/วิชา<input id="tn" placeholder="เช่น ทบทวนฟิสิกส์"></label>
+      <label>ชั่วโมงต่อสัปดาห์<input id="th" type="number" min="1" max="30" value="4" style="width:90px"></label>
+      <button class="btn" onclick="addTask()">เพิ่มงาน</button>
+    </div>
+    <ul class="list" id="tlist"></ul>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="regen()">จัดตารางให้อัตโนมัติ</button>
+      <button class="btn alt" onclick="askSchedule()">ให้ AI วิเคราะห์ตาราง</button>
+    </div>
+    <div id="aiout"></div>
+  </div>
+
+  <div class="panel">
+    <h2>ภาพรวมสัปดาห์</h2>
+    <div class="score">
+      <div class="ring" id="ring"><i id="scoreNum">0</i></div>
+      <div><b id="scoreLabel"></b><div id="scoreWhy" style="color:var(--mute);font-size:.9rem"></div></div>
+    </div>
+    <div class="stats" id="stats" style="margin-top:12px"></div>
+  </div>
+
+  <div class="panel">
+    <h2>ตารางสัปดาห์นี้</h2>
+    <div class="week" id="week"></div>
+    <div class="legend"><span>🟥 วิชาที่เลื่อนไม่ได้</span><span>🟦 วิชาที่ยืดหยุ่น</span><span>🟩 เวลาอ่านที่ระบบจัดให้</span><span>ช่วง 12:00–13:00 เว้นไว้เป็นพักกลางวัน</span></div>
+  </div>
+</section>
+
+<section id="t-check" hidden>
+  <div class="panel">
+    <h2>เช็กอินวันนี้</h2>
+    <div class="row">
+      <label>อารมณ์ (1 แย่ – 5 ดี)<select id="cm"></select></label>
+      <label>ความเครียด (1 น้อย – 5 มาก)<select id="cs"></select></label>
+      <label>ชั่วโมงนอน<input id="cz" type="number" min="0" max="14" step="0.5" value="7" style="width:90px"></label>
+      <button class="btn" onclick="saveCheck()">บันทึก</button>
+    </div>
+    <div id="cadvice"></div>
+    <div class="row" style="margin-top:10px"><button class="btn alt" onclick="askMind()">ให้ AI สรุปแนวโน้ม</button></div>
+    <div id="mindout"></div>
+    <p style="color:var(--mute);font-size:.85rem;margin-bottom:0">นี่เป็นเพียงการสำรวจความรู้สึกประจำวัน ไม่ใช่การวินิจฉัย หากรู้สึกแย่ต่อเนื่อง โปรดคุยกับคนใกล้ตัวหรือผู้เชี่ยวชาญ สายด่วนสุขภาพจิต 1323 (ตลอด 24 ชม.)</p>
+  </div>
+  <div class="panel"><h2>ย้อนหลัง 14 วัน</h2><ul class="list" id="clist"></ul></div>
+</section>
+
+<section id="t-exam" hidden>
+  <div class="panel">
+    <h2>เตรียมสอบ</h2>
+    <div class="row">
+      <label>วิชา<input id="en" placeholder="เช่น ฟิสิกส์ 1"></label>
+      <label>วันสอบ<input id="ed" type="date"></label>
+    </div>
+    <label style="margin-top:8px">หัวข้อที่ต้องอ่าน (บรรทัดละ 1 หัวข้อ)<textarea id="et" placeholder="บทที่ 1 จลนศาสตร์&#10;บทที่ 2 แรงและกฎของนิวตัน"></textarea></label>
+    <div class="row" style="margin-top:8px"><button class="btn" onclick="addExam()">สร้างแผนอ่าน</button></div>
+  </div>
+  <div id="elist"></div>
+</section>
+
+<section id="t-set" hidden>
+  <div class="panel">
+    <h2>ตั้งค่า AI (ไม่บังคับ)</h2>
+    <p style="margin-top:0;color:var(--mute)">ระบบจัดตาราง คำนวณคะแนน และแผนสอบทำงานได้เองโดยไม่ต้องมี AI ปุ่ม "ให้ AI…" ต้องใช้ Anthropic API key ของคุณเอง ซึ่งเก็บไว้ในเบราว์เซอร์นี้เท่านั้น</p>
+    <div class="row">
+      <label>API key<input id="key" type="password" placeholder="sk-ant-..." style="width:280px"></label>
+      <label>Model<input id="model" style="width:200px"></label>
+      <button class="btn" onclick="saveKey()">บันทึก</button>
+    </div>
+    <p style="color:var(--mute);font-size:.85rem">สำหรับเว็บสาธารณะจริง ควรย้ายการเรียก AI ไปไว้ฝั่งเซิร์ฟเวอร์ (ดู README)</p>
+  </div>
+  <div class="panel">
+    <h2>ข้อมูล</h2>
+    <button class="btn ghost" onclick="resetAll()">ล้างข้อมูลทั้งหมดในเบราว์เซอร์นี้</button>
+  </div>
+</section>
+</main>
+
+<script>
+const DAYS=['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์','อาทิตย์'];
+const DAY0=8*60, DAY1=21*60, LUNCH=[12*60,13*60];
+const K='studybalance.v1';
+let S=load();
+function load(){try{const s=JSON.parse(localStorage.getItem(K));if(s)return s}catch(e){}
+  return {subjects:[
+    {id:1,name:'แคลคูลัส',day:0,s:540,e:660,fixed:true},
+    {id:2,name:'ฟิสิกส์',day:2,s:600,e:720,fixed:true},
+    {id:3,name:'ภาษาอังกฤษ',day:3,s:780,e:900,fixed:false}],
+    tasks:[{id:1,name:'ทบทวนแคลคูลัส',hours:3},{id:2,name:'ทำการบ้านฟิสิกส์',hours:3}],
+    plan:[],checks:{},exams:[],key:'',model:'claude-sonnet-4-6'}}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+const $=id=>document.getElementById(id);
+const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const tm=v=>{const[a,b]=v.split(':').map(Number);return a*60+b};
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+
+/* tabs */
+const TABS=[['plan','ตารางเรียน'],['check','เช็กอินใจ'],['exam','เตรียมสอบ'],['set','ตั้งค่า']];
+TABS.forEach(([id,name],i)=>{const b=el('button','',name);b.setAttribute('role','tab');b.dataset.t=id;b.onclick=()=>showTab(id);$('tabs').appendChild(b)});
+function showTab(id){TABS.forEach(([t])=>{$('t-'+t).hidden=t!==id});[...$('tabs').children].forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id))}
+
+/* selects */
+DAYS.forEach((d,i)=>$('sd').add(new Option(d,i)));
+for(let i=1;i<=5;i++){$('cm').add(new Option(i,i));$('cs').add(new Option(i,i))}
+$('cm').value=3;$('cs').value=3;
+
+/* subjects & tasks */
+function addSubject(){
+  const name=$('sn').value.trim(),s=tm($('ss').value),e=tm($('se').value);
+  if(!name||e<=s){alert('กรอกชื่อวิชา และเวลาจบต้องหลังเวลาเริ่ม');return}
+  S.subjects.push({id:Date.now(),name,day:+$('sd').value,s,e,fixed:$('sf').checked});
+  $('sn').value='';regen();
+}
+function addTask(){
+  const name=$('tn').value.trim(),hours=+$('th').value;
+  if(!name||hours<1){alert('กรอกชื่องานและจำนวนชั่วโมง');return}
+  S.tasks.push({id:Date.now(),name,hours});$('tn').value='';regen();
+}
+function del(kind,id){S[kind]=S[kind].filter(x=>x.id!==id);regen()}
+function listUI(){
+  const sl=$('slist');sl.replaceChildren();
+  S.subjects.forEach(x=>{const li=el('li');li.append(el('span','',`${x.name} · ${DAYS[x.day]} ${hm(x.s)}–${hm(x.e)} · ${x.fixed?'เลื่อนไม่ได้':'ยืดหยุ่น'}`));
+    const b=el('button','','✕');b.setAttribute('aria-label','ลบ '+x.name);b.onclick=()=>del('subjects',x.id);li.append(b);sl.append(li)});
+  const tl=$('tlist');tl.replaceChildren();
+  S.tasks.forEach(x=>{const li=el('li');li.append(el('span','',`${x.name} · ${x.hours} ชม./สัปดาห์`));
+    const b=el('button','','✕');b.setAttribute('aria-label','ลบ '+x.name);b.onclick=()=>del('tasks',x.id);li.append(b);tl.append(li)});
+}
+
+/* scheduler: classes are never moved; study blocks fill free hours */
+function classBlocks(d){return S.subjects.filter(x=>x.day===d).map(x=>[x.s,x.e])}
+function load_(d,plan){return [...classBlocks(d),...plan.filter(p=>p.day===d).map(p=>[p.s,p.e])]}
+function overlap(a,b,list){return list.some(([s,e])=>a<e&&b>s)}
+function occupied(a,b,list){return list.reduce((t,[s,e])=>t+Math.max(0,Math.min(b,e)-Math.max(a,s)),0)}
+function regen(){
+  const plan=[];
+  S.tasks.forEach(t=>{
+    for(let h=0;h<t.hours;h++){
+      let best=null;
+      for(let d=0;d<7;d++){
+        const blocks=[...load_(d,plan),LUNCH];
+        const total=occupied(DAY0,DAY1,load_(d,plan))/60+(d===6?3:d===5?1.5:0);
+        for(let s=DAY0;s+60<=DAY1;s+=60){
+          if(overlap(s,s+60,blocks))continue;
+          if(occupied(s-180,s,load_(d,plan))>=150)continue;   // force a break after ~3h straight
+          const score=total*10+(s>=19*60?4:0)+Math.abs(s-15*60)/120;
+          if(!best||score<best.score)best={d,s,score};
+        }
+      }
+      if(best)plan.push({day:best.d,s:best.s,e:best.s+60,name:t.name});
+    }
+  });
+  S.plan=plan;save();render();
+}
+
+/* stats & score */
+function checkAvg(n){const k=Object.keys(S.checks).sort().slice(-n).map(d=>S.checks[d]);
+  if(!k.length)return null;const a=f=>k.reduce((t,x)=>t+x[f],0)/k.length;return{m:a('mood'),s:a('stress'),z:a('sleep'),n:k.length}}
+function compute(){
+  let cls=0,study=0,over=0,restDays=0,noBreak=0;const per=[];
+  for(let d=0;d<7;d++){
+    const L=load_(d,S.plan),c=occupied(DAY0,DAY1,classBlocks(d))/60,st=occupied(DAY0,DAY1,S.plan.filter(p=>p.day===d).map(p=>[p.s,p.e]))/60;
+    cls+=c;study+=st;per.push(c+st);
+    if(c+st>9)over++;if(c+st===0)restDays++;
+    if(c+st>0&&(DAY1-DAY0)/60-1-(c+st)<3)noBreak++;
+  }
+  const total=cls+study,avg=total/6,why=[];
+  let sc=100;
+  if(avg>6){sc-=(avg-6)*9;why.push('ชั่วโมงเรียน+อ่านเฉลี่ยต่อวันสูง')}
+  if(over){sc-=over*8;why.push(over+' วันที่เกิน 9 ชม.')}
+  if(noBreak){sc-=noBreak*6;why.push('บางวันแทบไม่มีเวลาพัก')}
+  if(!restDays){sc-=8;why.push('ไม่มีวันที่ว่างเลย')}else sc+=4;
+  const c7=checkAvg(7);
+  if(c7){if(c7.z<7){sc-=(7-c7.z)*6;why.push('นอนเฉลี่ยน้อยกว่า 7 ชม.')}if(c7.s>3){sc-=(c7.s-3)*8;why.push('ความเครียดเฉลี่ยสูง')}}
+  sc=Math.max(0,Math.min(100,Math.round(sc)));
+  return{cls,study,total,sc,why,rest:restDays,free:7*13-total,per};
+}
+function render(){
+  listUI();
+  const r=compute();
+  $('scoreNum').textContent=r.sc;
+  $('ring').style.setProperty('--p',r.sc);
+  $('ring').style.setProperty('--c',r.sc>=70?'var(--teal)':r.sc>=45?'var(--amber)':'var(--rose)');
+  $('scoreLabel').textContent=r.sc>=70?'สมดุลดี':r.sc>=45?'เริ่มตึง ควรเว้นพักเพิ่ม':'หนักเกินไป ควรลดภาระ';
+  $('scoreWhy').textContent=r.why.length?'ที่ดึงคะแนนลง: '+r.why.join(', '):'ไม่พบสัญญาณน่ากังวลในตารางนี้';
+  const st=$('stats');st.replaceChildren();
+  [['เวลาเรียนรวม',r.cls.toFixed(1)+' ชม.'],['เวลาอ่านที่จัดให้',r.study.toFixed(1)+' ชม.'],['เวลาว่าง/พัก (08–21 น.)',Math.max(0,r.free).toFixed(1)+' ชม.'],['วันที่ว่างเต็มวัน',r.rest+' วัน']]
+   .forEach(([a,b])=>{const d=el('div','stat');d.append(el('b','',b),el('span','',a));st.append(d)});
+  const w=$('week');w.replaceChildren();
+  for(let d=0;d<7;d++){
+    const col=el('div','day');col.append(el('h3','',DAYS[d]));
+    const items=[...S.subjects.filter(x=>x.day===d).map(x=>({s:x.s,e:x.e,name:x.name,t:'class'+(x.fixed?' fixed':'')})),
+                 ...S.plan.filter(p=>p.day===d).map(p=>({s:p.s,e:p.e,name:p.name,t:'study'}))].sort((a,b)=>a.s-b.s);
+    if(!items.length)col.append(el('small','','วันพัก'));
+    items.forEach(i=>{const b=el('div','blk '+i.t,i.name);b.append(el('small','',hm(i.s)+'–'+hm(i.e)));col.append(b)});
+    w.append(col);
+  }
+  checkUI();examUI();
+}
+
+/* check-in */
+function saveCheck(){S.checks[todayStr()]={mood:+$('cm').value,stress:+$('cs').value,sleep:+$('cz').value};save();render()}
+function checkUI(){
+  const dates=Object.keys(S.checks).sort().reverse().slice(0,14),l=$('clist');l.replaceChildren();
+  if(!dates.length)l.append(el('li','','ยังไม่มีข้อมูล ลองบันทึกเช็กอินวันแรกได้เลย'));
+  dates.forEach(d=>{const c=S.checks[d];l.append(el('li','',`${d} · อารมณ์ ${c.mood}/5 · เครียด ${c.stress}/5 · นอน ${c.sleep} ชม.`))});
+  const a=$('cadvice');a.replaceChildren();
+  const c3=checkAvg(3);
+  if(c3&&c3.n>=2&&(c3.s>=4||c3.z<6||c3.m<=2)){
+    const m=el('div','msg','ช่วงนี้ดูเหนื่อยสะสม (เครียดสูง นอนน้อย หรืออารมณ์ต่ำต่อเนื่อง) ลองลดเวลาอ่านลงสัปดาห์ละ 1 ชม. ต่อรายการ และเพิ่มเวลาพักก่อน ');
+    const b=el('button','btn alt','ลดภาระให้อัตโนมัติ');b.style.marginLeft='8px';b.onclick=()=>{S.tasks.forEach(t=>t.hours=Math.max(1,t.hours-1));regen()};m.append(b);a.append(m);
+  }else if(c3)a.append(el('div','msg ok','สัญญาณช่วงนี้ยังโอเค รักษาจังหวะนี้ไว้'));
+}
+
+/* exam planner */
+function addExam(){
+  const name=$('en').value.trim(),date=$('ed').value,topics=$('et').value.split('\n').map(x=>x.trim()).filter(Boolean);
+  if(!name||!date||!topics.length){alert('กรอกวิชา วันสอบ และหัวข้ออย่างน้อย 1 หัวข้อ');return}
+  S.exams.push({id:Date.now(),name,date,topics});$('en').value='';$('et').value='';save();render();
+}
+function examDays(e){
+  const t0=new Date(todayStr()+'T00:00'),t1=new Date(e.date+'T00:00'),n=Math.round((t1-t0)/864e5);
+  if(n<=0)return null;
+  const study=Math.max(1,n>=3?n-2:n),topics=e.topics,out=[];
+  for(let i=0;i<study;i++){
+    const a=Math.floor(i*topics.length/study),b=Math.floor((i+1)*topics.length/study);
+    const d=new Date(t0.getTime()+i*864e5);
+    out.push({date:d.toISOString().slice(0,10),text:topics.slice(a,b).join(', ')||'ทบทวนหัวข้อที่ยังไม่แน่น'});
+  }
+  if(n>=3){out.push({date:new Date(t0.getTime()+(n-2)*864e5).toISOString().slice(0,10),text:'ทำข้อสอบเก่า/โจทย์ทบทวนรวมทุกหัวข้อ'});
+           out.push({date:new Date(t0.getTime()+(n-1)*864e5).toISOString().slice(0,10),text:'ทบทวนเบาๆ สรุปสั้น นอนให้พอ'})}
+  return out;
+}
+function examUI(){
+  const box=$('elist');box.replaceChildren();
+  S.exams.forEach(e=>{
+    const p=el('div','panel');p.append(el('h2','',`${e.name} · สอบ ${e.date}`));
+    const days=examDays(e);
+    if(!days)p.append(el('div','msg','วันสอบมาถึงหรือผ่านไปแล้ว'));
+    else{const ul=el('ul','list');days.forEach(d=>ul.append(el('li','',`${d.date} — ${d.text}`)));p.append(ul)}
+    const row=el('div','row');row.style.marginTop='10px';
+    const a=el('button','btn alt','ให้ AI ปรับแผนนี้');a.onclick=()=>askAI(`ช่วยปรับแผนเตรียมสอบวิชา ${e.name} (สอบ ${e.date}) ให้สมเหตุสมผลและไม่โหดเกินไป แผนตอนนี้:\n`+(days||[]).map(d=>d.date+': '+d.text).join('\n'),out);
+    const x=el('button','btn ghost','ลบแผน');x.onclick=()=>{S.exams=S.exams.filter(z=>z.id!==e.id);save();render()};
+    const out=el('div');row.append(a,x);p.append(row,out);box.append(p);
+  });
+}
+
+/* AI (optional, user-supplied key) */
+async function askAI(prompt,out){
+  out.replaceChildren();
+  if(!S.key){out.append(el('div','msg','ใส่ API key ที่แท็บ "ตั้งค่า" ก่อน'));return}
+  out.append(el('div','msg ok','กำลังคิด…'));
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'content-type':'application/json','x-api-key':S.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:S.model,max_tokens:900,system:'คุณเป็นผู้ช่วยวางแผนการเรียนของนักเรียน/นักศึกษา ตอบเป็นภาษาไทย กระชับ เป็นข้อๆ ใจดีแต่ตรงไปตรงมา ไม่วินิจฉัยโรค ถ้าสัญญาณเครียดสูงต่อเนื่องให้แนะนำคุยกับคนใกล้ตัวหรือผู้เชี่ยวชาญ',messages:[{role:'user',content:prompt}]})});
+    const j=await r.json();
+    if(!r.ok)throw new Error(j.error&&j.error.message||r.status);
+    out.replaceChildren(el('pre','ai',j.content.map(c=>c.text||'').join('')));
+  }catch(e){out.replaceChildren(el('div','msg','เรียก AI ไม่สำเร็จ: '+e.message))}
+}
+function askSchedule(){const r=compute();
+  askAI('ตารางสัปดาห์ (วัน/เวลา):\n'+S.subjects.map(x=>`${DAYS[x.day]} ${hm(x.s)}-${hm(x.e)} ${x.name} (${x.fixed?'เลื่อนไม่ได้':'ยืดหยุ่น'})`).join('\n')+'\nเวลาอ่านที่จัดให้:\n'+S.plan.map(p=>`${DAYS[p.day]} ${hm(p.s)} ${p.name}`).join('\n')+`\nคะแนน work-life ${r.sc}/100 เรียนรวม ${r.cls.toFixed(1)} ชม. อ่าน ${r.study.toFixed(1)} ชม.\nช่วยวิเคราะห์จุดที่ตึงเกินไปและแนะนำการปรับ`,$('aiout'))}
+function askMind(){const k=Object.keys(S.checks).sort().slice(-14).map(d=>`${d}: อารมณ์ ${S.checks[d].mood}, เครียด ${S.checks[d].stress}, นอน ${S.checks[d].sleep}`).join('\n');
+  askAI('ข้อมูลเช็กอินความรู้สึกของฉัน:\n'+(k||'ยังไม่มี')+'\nช่วยสรุปแนวโน้มและแนะนำวิธีผ่อนภาระการเรียนที่ทำได้จริง',$('mindout'))}
+function saveKey(){S.key=$('key').value.trim();S.model=$('model').value.trim()||'claude-sonnet-4-6';save();alert('บันทึกแล้ว')}
+function resetAll(){if(confirm('ล้างข้อมูลทั้งหมด?')){try{localStorage.removeItem(K)}catch(e){}location.reload()}}
+
+$('key').value=S.key||'';$('model').value=S.model||'claude-sonnet-4-6';
+showTab('plan');
+if(!S.plan.length)regen();else render();
+</script>
+</body>
+</html>
